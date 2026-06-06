@@ -30,9 +30,9 @@ html,body{height:100%;background:#fafafa;font-family:'Syne',sans-serif;-webkit-f
 .field input{width:100%;padding:13px 14px;border:1px solid #e8e8e5;border-radius:3px;font-family:'Syne',sans-serif;font-size:14px;color:#0a0a0a;background:#fafafa;outline:none;transition:border-color 0.15s,box-shadow 0.15s;}
 .field input:focus{border-color:#0a0a0a;box-shadow:0 0 0 3px rgba(10,10,10,0.06);}
 .field input::placeholder{color:#ccc;}
-.submit-btn{width:100%;padding:14px;background:#0a0a0a;color:#fafafa;border:none;border-radius:3px;font-family:'Syne',sans-serif;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;margin-top:6px;transition:opacity 0.18s,transform 0.15s;}
-.submit-btn:hover{opacity:0.82;transform:translateY(-1px);}
-.submit-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+.submit-btn{width:100%;padding:14px;background:#0a0a0a;color:#fafafa;border:none;border-radius:3px;font-family:'Syne',sans-serif;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;margin-top:6px;transition:opacity 0.18s;}
+.submit-btn:hover{opacity:0.82;}
+.submit-btn:disabled{opacity:0.5;cursor:not-allowed;}
 .name-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
 .error-msg{font-family:'DM Mono',monospace;font-size:11px;color:#c0392b;margin-top:12px;display:none;padding:10px 12px;background:#fdf0ee;border-radius:2px;}
 .success-msg{font-family:'DM Mono',monospace;font-size:11px;color:#1e8449;margin-top:12px;display:none;padding:10px 12px;background:#edfaf1;border-radius:2px;}
@@ -98,7 +98,7 @@ html,body{height:100%;background:#fafafa;font-family:'Syne',sans-serif;-webkit-f
     </div>
   </div>
 
-  <!-- SIGN UP PANEL -->
+  <!-- SIGN UP -->
   <div class="right-panel" id="signup-panel">
     <div class="form-box">
       <div class="form-eyebrow">Begin your journey</div>
@@ -118,7 +118,7 @@ html,body{height:100%;background:#fafafa;font-family:'Syne',sans-serif;-webkit-f
     <svg class="corner-accent" viewBox="0 0 120 120"><circle cx="120" cy="120" r="100" fill="#0a0a0a"/></svg>
   </div>
 
-  <!-- LOGIN PANEL -->
+  <!-- LOGIN -->
   <div class="right-panel" id="login-panel" style="display:none;">
     <div class="form-box">
       <div class="form-eyebrow">Welcome back</div>
@@ -134,9 +134,9 @@ html,body{height:100%;background:#fafafa;font-family:'Syne',sans-serif;-webkit-f
 </div>
 
 <script>
-const SUPABASE_URL = 'https://sxozpfmrwkahwyfchqcf.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4b3pwZm1yd2thaHd5ZmNocWNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NDI3MjYsImV4cCI6MjA5NjIxODcyNn0.hAnCe1kGS-CdmhaTybab8utIJU5v4XxAZEC0qQpVTfc';
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_URL='https://sxozpfmrwkahwyfchqcf.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4b3pwZm1yd2thaHd5ZmNocWNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NDI3MjYsImV4cCI6MjA5NjIxODcyNn0.hAnCe1kGS-CdmhaTybab8utIJU5v4XxAZEC0qQpVTfc';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 // Check if already logged in
 (async()=>{
@@ -146,41 +146,63 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 function showLogin(){document.getElementById('signup-panel').style.display='none';document.getElementById('login-panel').style.display='flex';}
 function showSignup(){document.getElementById('login-panel').style.display='none';document.getElementById('signup-panel').style.display='flex';}
-function showErr(id,msg){var el=document.getElementById(id);el.textContent=msg;el.style.display='block';}
+function showErr(id,msg){const el=document.getElementById(id);el.textContent=msg;el.style.display='block';}
 function hideErr(id){document.getElementById(id).style.display='none';}
 
 async function doSignup(){
   hideErr('su-error');hideErr('su-success');
-  var fname=document.getElementById('su-fname').value.trim();
-  var email=document.getElementById('su-email').value.trim();
-  var pass=document.getElementById('su-pass').value;
-  var pass2=document.getElementById('su-pass2').value;
+  const fname=document.getElementById('su-fname').value.trim();
+  const email=document.getElementById('su-email').value.trim();
+  const pass=document.getElementById('su-pass').value;
+  const pass2=document.getElementById('su-pass2').value;
   if(!fname){showErr('su-error','Please enter your first name.');return;}
   if(!email||!email.includes('@')){showErr('su-error','Please enter a valid email.');return;}
   if(pass.length<6){showErr('su-error','Password must be at least 6 characters.');return;}
   if(pass!==pass2){showErr('su-error','Passwords do not match.');return;}
-  var btn=document.getElementById('su-btn');
+
+  const btn=document.getElementById('su-btn');
   btn.disabled=true;btn.textContent='Creating…';
-  const {data,error}=await sb.auth.signUp({
-    email,password:pass,
-    options:{data:{fname:fname}}
-  });
-  if(error){showErr('su-error',error.message);btn.disabled=false;btn.textContent='Create Account';return;}
-  var s=document.getElementById('su-success');
-  s.textContent='Account created! Redirecting…';s.style.display='block';
+
+  // Step 1: sign up with Supabase auth
+  const {data,error}=await sb.auth.signUp({email,password:pass});
+
+  if(error){
+    showErr('su-error',error.message);
+    btn.disabled=false;btn.textContent='Create Account';
+    return;
+  }
+
+  // Step 2: manually insert profile (no trigger needed)
+  if(data.user){
+    await sb.from('profiles').upsert({
+      id:data.user.id,
+      fname:fname,
+      email:email
+    });
+  }
+
+  const s=document.getElementById('su-success');
+  s.textContent='Account created! Redirecting…';
+  s.style.display='block';
   setTimeout(()=>window.location.href='readflow-home.html',1000);
 }
 
 async function doLogin(){
   hideErr('li-error');
-  var email=document.getElementById('li-email').value.trim();
-  var pass=document.getElementById('li-pass').value;
+  const email=document.getElementById('li-email').value.trim();
+  const pass=document.getElementById('li-pass').value;
   if(!email){showErr('li-error','Please enter your email.');return;}
   if(!pass){showErr('li-error','Please enter your password.');return;}
-  var btn=document.getElementById('li-btn');
+
+  const btn=document.getElementById('li-btn');
   btn.disabled=true;btn.textContent='Signing in…';
+
   const {data,error}=await sb.auth.signInWithPassword({email,password:pass});
-  if(error){showErr('li-error','Incorrect email or password.');btn.disabled=false;btn.textContent='Sign In';return;}
+  if(error){
+    showErr('li-error','Incorrect email or password.');
+    btn.disabled=false;btn.textContent='Sign In';
+    return;
+  }
   window.location.href='readflow-home.html';
 }
 
