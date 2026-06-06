@@ -262,7 +262,7 @@ function openSettings(){
 function closeSettings(){document.getElementById('settings-overlay').classList.remove('open');}
 function updateGoalPreview(){
   const h=parseInt(document.getElementById('s-goal-h').value)||0,m=parseInt(document.getElementById('s-goal-m').value)||0;
-  const t=h>0?(m>0?h+'h '+m+'m':h+' hour'+(h!==1?'s','')):m+' min';
+  const t=h>0?(m>0?h+'h '+m+'m':h+' hour'+(h!==1?'s':'')):m+' min';
   document.getElementById('goal-preview').textContent='Default goal: '+t;
 }
 document.getElementById('s-goal-h').addEventListener('input',updateGoalPreview);
