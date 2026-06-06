@@ -6,6 +6,7 @@
 <title>ReadFlow</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Syne:wght@400;500;600;700&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:#fafafa;color:#0a0a0a;font-family:'Syne',sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased;}
@@ -72,12 +73,14 @@ nav{height:56px;border-bottom:1px solid #e8e8e5;display:flex;align-items:center;
 .mcancelbtn{flex:1;padding:11px;background:none;border:1px solid #e8e8e5;border-radius:2px;font-family:'Syne',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#aaa;cursor:pointer;}
 .mconfirmbtn{flex:2;padding:11px;background:#0a0a0a;color:#fafafa;border:none;border-radius:2px;font-family:'Syne',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;transition:opacity 0.15s;}
 .mconfirmbtn:hover{opacity:0.8;}
+.mconfirmbtn:disabled{opacity:0.5;cursor:not-allowed;}
 .goal-inp-row{display:flex;align-items:center;gap:6px;margin-top:8px;}
 .ginp{width:52px;padding:8px 0;text-align:center;border:1px solid #e8e8e5;border-radius:2px;font-family:'DM Mono',monospace;font-size:16px;color:#0a0a0a;background:#fafafa;outline:none;transition:border-color 0.15s;}
 .ginp:focus{border-color:#0a0a0a;}
 .gcolon{font-family:'DM Mono',monospace;font-size:18px;color:#ccc;}
 .ghint{font-family:'DM Mono',monospace;font-size:10px;color:#ccc;margin-top:6px;}
 .goal-preview{font-family:'DM Mono',monospace;font-size:11px;color:#888;margin-top:8px;}
+.loading{text-align:center;padding:60px;font-family:'DM Mono',monospace;font-size:12px;color:#bbb;grid-column:1/-1;background:#fafafa;}
 </style>
 </head>
 <body>
@@ -94,7 +97,7 @@ nav{height:56px;border-bottom:1px solid #e8e8e5;display:flex;align-items:center;
     <div>
       <div class="hero-eyebrow">— your reading space</div>
       <div class="hero-title">Hello, <em id="hero-name">there.</em></div>
-      <div class="hero-sub" id="hero-sub">0 books in your library</div>
+      <div class="hero-sub" id="hero-sub">loading your library…</div>
     </div>
   </div>
   <div class="accent-line">
@@ -102,7 +105,7 @@ nav{height:56px;border-bottom:1px solid #e8e8e5;display:flex;align-items:center;
     <span style="width:12px;background:#2ecc71;"></span>
     <span style="width:6px;background:#e8e8e5;"></span>
   </div>
-  <div class="books-grid" id="grid"></div>
+  <div class="books-grid" id="grid"><div class="loading">loading…</div></div>
 </div>
 
 <!-- ADD BOOK MODAL -->
@@ -132,7 +135,7 @@ nav{height:56px;border-bottom:1px solid #e8e8e5;display:flex;align-items:center;
     </div>
     <div class="modal-acts">
       <button class="mcancelbtn" onclick="closeAddBook()">Cancel</button>
-      <button class="mconfirmbtn" onclick="addBook()">Add to Library</button>
+      <button class="mconfirmbtn" id="add-btn" onclick="addBook()">Add to Library</button>
     </div>
   </div>
 </div>
@@ -162,41 +165,47 @@ nav{height:56px;border-bottom:1px solid #e8e8e5;display:flex;align-items:center;
 </div>
 
 <script>
+const SUPABASE_URL='https://sxozpfmrwkahwyfchqcf.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4b3pwZm1yd2thaHd5ZmNocWNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NDI3MjYsImV4cCI6MjA5NjIxODcyNn0.hAnCe1kGS-CdmhaTybab8utIJU5v4XxAZEC0qQpVTfc';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+let userId=null, userName='there', books=[], chosenColor='#1a1a1a';
+const GD='readflow_goal_default';
 
 // Session guard
-var SESSION_KEY='readflow_session';
-(function(){
-  try{
-    var sess=JSON.parse(localStorage.getItem(SESSION_KEY));
-    if(!sess||!sess.id){window.location.href='readflow-auth.html';return;}
-    var name=sess.fname||'there';
-    document.getElementById('hero-name').textContent=name+'.';
-    document.title='ReadFlow — '+name;
-  }catch(e){window.location.href='readflow-auth.html';}
+(async()=>{
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session){window.location.href='readflow-auth.html';return;}
+  userId=session.user.id;
+  userName=session.user.user_metadata?.fname||session.user.email.split('@')[0];
+  document.getElementById('hero-name').textContent=userName+'.';
+  document.title='ReadFlow — '+userName;
+  loadBooks();
 })();
-function doLogout(){
-  try{localStorage.removeItem(SESSION_KEY);}catch(e){}
-  window.location.href='readflow-auth.html';
+
+async function loadBooks(){
+  const {data,error}=await sb.from('books').select('*').order('created_at',{ascending:false});
+  if(error){console.error(error);return;}
+  books=data||[];
+  render();
 }
 
-var BK='readflow_books',NID='readflow_nextid',GD='readflow_goal_default';
-function ls(k){try{return JSON.parse(localStorage.getItem(k));}catch(e){return null;}}
-function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
-var books=ls(BK)||[];
-var nextId=parseInt(localStorage.getItem(NID)||'1');
-var chosenColor='#1a1a1a';
-var defaultGoal=ls(GD)||{h:1,m:0};
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function saveBooks(){lsSet(BK,books);localStorage.setItem(NID,String(nextId));}
+
 function render(){
-  var grid=document.getElementById('grid');
+  const grid=document.getElementById('grid');
   grid.innerHTML='';
-  document.getElementById('hero-sub').textContent=books.length===0?'0 books in your library':books.length+' book'+(books.length!==1?'s':'')+' in your library';
-  if(!books.length){grid.innerHTML='<div class="empty-state"><div class="empty-title">Your library is empty.</div><div class="empty-sub">add your first book to get started</div></div>';return;}
+  const sub=books.length===0?'0 books in your library':books.length+' book'+(books.length!==1?'s':'')+' in your library';
+  document.getElementById('hero-sub').textContent=sub;
+  if(!books.length){
+    grid.innerHTML='<div class="empty-state"><div class="empty-title">Your library is empty.</div><div class="empty-sub">add your first book to get started</div></div>';
+    return;
+  }
   books.forEach(function(b,i){
-    var pct=Math.round((b.read/b.pages)*100);
-    var lbl=pct===0?'Start Reading':pct>=100?'Read Again':'Continue Reading';
-    var card=document.createElement('div');card.className='card';card.style.animationDelay=(i*0.06)+'s';
+    const pct=Math.round((b.read/b.pages)*100);
+    const lbl=pct===0?'Start Reading':pct>=100?'Read Again':'Continue Reading';
+    const card=document.createElement('div');
+    card.className='card';card.style.animationDelay=(i*0.06)+'s';
     card.innerHTML='<div class="cover-wrap"><div class="cover-book" style="background:'+b.color+'"><div class="cl w8"></div><div class="cl w6"></div><div class="cl w4"></div></div></div>'+
       '<div class="card-genre">'+esc(b.genre)+'</div>'+
       '<div class="card-title">'+esc(b.title)+'</div>'+
@@ -208,38 +217,69 @@ function render(){
     grid.appendChild(card);
   });
 }
+
 function goBook(id){window.location.href='readflow-book.html?id='+id;}
-function delBook(id,e){e.stopPropagation();if(!confirm('Remove this book?'))return;books=books.filter(function(b){return b.id!==id;});saveBooks();render();}
-function openAddBook(){document.getElementById('add-overlay').classList.add('open');document.getElementById('f-title').focus();}
-function closeAddBook(){document.getElementById('add-overlay').classList.remove('open');['f-title','f-author','f-pages','f-genre'].forEach(function(id){document.getElementById(id).value='';});}
-function pickColor(el){document.querySelectorAll('.cdot').forEach(function(d){d.classList.remove('sel');});el.classList.add('sel');chosenColor=el.getAttribute('data-c');}
-function addBook(){
-  var title=document.getElementById('f-title').value.trim(),author=document.getElementById('f-author').value.trim(),pages=parseInt(document.getElementById('f-pages').value)||200,genre=document.getElementById('f-genre').value.trim()||'General';
-  if(!title){document.getElementById('f-title').focus();return;}
-  books.unshift({id:nextId++,title:title,author:author||'Unknown Author',genre:genre,pages:pages,read:0,color:chosenColor});
-  saveBooks();closeAddBook();render();
+
+async function delBook(id,e){
+  e.stopPropagation();
+  if(!confirm('Remove this book?'))return;
+  await sb.from('books').delete().eq('id',id);
+  books=books.filter(b=>b.id!==id);
+  render();
 }
+
+function openAddBook(){document.getElementById('add-overlay').classList.add('open');document.getElementById('f-title').focus();}
+function closeAddBook(){
+  document.getElementById('add-overlay').classList.remove('open');
+  ['f-title','f-author','f-pages','f-genre'].forEach(id=>document.getElementById(id).value='');
+}
+function pickColor(el){document.querySelectorAll('.cdot').forEach(d=>d.classList.remove('sel'));el.classList.add('sel');chosenColor=el.getAttribute('data-c');}
+
+async function addBook(){
+  const title=document.getElementById('f-title').value.trim();
+  const author=document.getElementById('f-author').value.trim();
+  const pages=parseInt(document.getElementById('f-pages').value)||200;
+  const genre=document.getElementById('f-genre').value.trim()||'General';
+  if(!title){document.getElementById('f-title').focus();return;}
+  const btn=document.getElementById('add-btn');
+  btn.disabled=true;btn.textContent='Adding…';
+  const {data,error}=await sb.from('books').insert([{
+    user_id:userId,title,author:author||'Unknown Author',genre,pages,read:0,color:chosenColor
+  }]).select().single();
+  btn.disabled=false;btn.textContent='Add to Library';
+  if(error){alert('Error adding book: '+error.message);return;}
+  books.unshift(data);
+  closeAddBook();render();
+}
+
 function openSettings(){
-  document.getElementById('s-goal-h').value=defaultGoal.h;
-  document.getElementById('s-goal-m').value=defaultGoal.m;
+  const g=JSON.parse(localStorage.getItem(GD)||'{"h":1,"m":0}');
+  document.getElementById('s-goal-h').value=g.h;
+  document.getElementById('s-goal-m').value=g.m;
   updateGoalPreview();
   document.getElementById('settings-overlay').classList.add('open');
 }
 function closeSettings(){document.getElementById('settings-overlay').classList.remove('open');}
 function updateGoalPreview(){
-  var h=parseInt(document.getElementById('s-goal-h').value)||0,m=parseInt(document.getElementById('s-goal-m').value)||0;
-  var t=h>0?(m>0?h+'h '+m+'m':h+' hour'+(h!==1?'s':'')):m+' min';
+  const h=parseInt(document.getElementById('s-goal-h').value)||0,m=parseInt(document.getElementById('s-goal-m').value)||0;
+  const t=h>0?(m>0?h+'h '+m+'m':h+' hour'+(h!==1?'s','')):m+' min';
   document.getElementById('goal-preview').textContent='Default goal: '+t;
 }
 document.getElementById('s-goal-h').addEventListener('input',updateGoalPreview);
 document.getElementById('s-goal-m').addEventListener('input',updateGoalPreview);
 function saveSettings(){
-  defaultGoal={h:parseInt(document.getElementById('s-goal-h').value)||0,m:parseInt(document.getElementById('s-goal-m').value)||0};
-  if(!defaultGoal.h&&!defaultGoal.m)defaultGoal={h:1,m:0};
-  lsSet(GD,defaultGoal);closeSettings();
+  let g={h:parseInt(document.getElementById('s-goal-h').value)||0,m:parseInt(document.getElementById('s-goal-m').value)||0};
+  if(!g.h&&!g.m)g={h:1,m:0};
+  localStorage.setItem(GD,JSON.stringify(g));
+  closeSettings();
 }
-document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeAddBook();closeSettings();}});
-render();
+
+async function doLogout(){
+  await sb.auth.signOut();
+  window.location.href='readflow-auth.html';
+}
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeAddBook();closeSettings();}});
 </script>
 </body>
 </html>

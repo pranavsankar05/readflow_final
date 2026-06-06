@@ -6,102 +6,66 @@
 <title>ReadFlow — Sign Up</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Syne:wght@400;500;600;700&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;background:#fafafa;font-family:'Syne',sans-serif;-webkit-font-smoothing:antialiased;color:#0a0a0a;}
-
-/* LAYOUT — left illustration panel + right form */
 .auth-layout{display:grid;grid-template-columns:1fr 1fr;min-height:100vh;}
-
-/* ── LEFT PANEL ── */
 .left-panel{background:#0a0a0a;display:flex;flex-direction:column;justify-content:space-between;padding:48px;position:relative;overflow:hidden;}
-
 .panel-logo{font-family:'Playfair Display',serif;font-size:22px;font-weight:500;color:#fafafa;letter-spacing:-0.3px;}
 .panel-logo em{font-style:italic;color:#e85d26;}
-
-/* big decorative illustration */
 .illustration{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 0;}
-
 .panel-quote{border-left:2px solid #e85d26;padding-left:16px;}
 .panel-quote p{font-family:'Playfair Display',serif;font-size:15px;font-style:italic;color:#aaa;line-height:1.6;}
 .panel-quote cite{display:block;font-family:'DM Mono',monospace;font-size:10px;color:#555;letter-spacing:0.08em;text-transform:uppercase;margin-top:8px;}
-
-/* ── RIGHT PANEL ── */
 .right-panel{display:flex;flex-direction:column;justify-content:center;align-items:center;padding:60px 48px;position:relative;}
-
 .form-box{width:100%;max-width:400px;}
-
 .form-eyebrow{font-family:'DM Mono',monospace;font-size:10px;color:#bbb;letter-spacing:0.14em;text-transform:uppercase;margin-bottom:10px;}
 .form-title{font-family:'Playfair Display',serif;font-size:34px;font-weight:400;letter-spacing:-0.8px;line-height:1.1;margin-bottom:6px;}
 .form-title em{font-style:italic;}
 .form-sub{font-family:'DM Mono',monospace;font-size:12px;color:#aaa;margin-bottom:36px;}
 .form-sub a{color:#0a0a0a;text-decoration:underline;text-underline-offset:2px;cursor:pointer;}
-
 .field{margin-bottom:18px;}
 .field label{display:block;font-family:'DM Mono',monospace;font-size:10px;color:#888;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:7px;}
 .field input{width:100%;padding:13px 14px;border:1px solid #e8e8e5;border-radius:3px;font-family:'Syne',sans-serif;font-size:14px;color:#0a0a0a;background:#fafafa;outline:none;transition:border-color 0.15s,box-shadow 0.15s;}
 .field input:focus{border-color:#0a0a0a;box-shadow:0 0 0 3px rgba(10,10,10,0.06);}
 .field input::placeholder{color:#ccc;}
-
 .submit-btn{width:100%;padding:14px;background:#0a0a0a;color:#fafafa;border:none;border-radius:3px;font-family:'Syne',sans-serif;font-size:12px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;margin-top:6px;transition:opacity 0.18s,transform 0.15s;}
 .submit-btn:hover{opacity:0.82;transform:translateY(-1px);}
-.submit-btn:active{transform:translateY(0);}
-
-.divider{display:flex;align-items:center;gap:12px;margin:24px 0;}
-.divider-line{flex:1;height:1px;background:#e8e8e5;}
-.divider-txt{font-family:'DM Mono',monospace;font-size:10px;color:#ccc;letter-spacing:0.06em;}
-
-.error-msg{font-family:'DM Mono',monospace;font-size:11px;color:#c0392b;margin-top:10px;display:none;}
-.success-msg{font-family:'DM Mono',monospace;font-size:11px;color:#1e8449;margin-top:10px;display:none;}
-
-/* corner accent */
-.corner-accent{position:absolute;bottom:0;right:0;width:120px;height:120px;opacity:0.04;}
-
-/* name row */
+.submit-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
 .name-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.error-msg{font-family:'DM Mono',monospace;font-size:11px;color:#c0392b;margin-top:12px;display:none;padding:10px 12px;background:#fdf0ee;border-radius:2px;}
+.success-msg{font-family:'DM Mono',monospace;font-size:11px;color:#1e8449;margin-top:12px;display:none;padding:10px 12px;background:#edfaf1;border-radius:2px;}
+.corner-accent{position:absolute;bottom:0;right:0;width:120px;height:120px;opacity:0.04;}
+@media(max-width:768px){.auth-layout{grid-template-columns:1fr;}.left-panel{display:none;}}
 </style>
 </head>
 <body>
-
 <div class="auth-layout">
-
-  <!-- LEFT ILLUSTRATION PANEL -->
   <div class="left-panel">
     <div class="panel-logo">read<em>flow</em></div>
-
     <div class="illustration">
-      <!-- Minimal artistic book/reading illustration -->
       <svg width="340" height="380" viewBox="0 0 340 380" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <!-- open book base -->
         <path d="M60 260 Q170 240 280 260 L280 300 Q170 280 60 300 Z" fill="#1a1a1a" opacity="0.9"/>
-        <!-- left page -->
         <path d="M60 140 Q115 130 170 135 L170 262 Q115 257 60 267 Z" fill="#2a2a2a"/>
-        <!-- right page -->
         <path d="M170 135 Q225 130 280 140 L280 267 Q225 257 170 262 Z" fill="#222"/>
-        <!-- spine line -->
         <line x1="170" y1="130" x2="170" y2="268" stroke="#e85d26" stroke-width="1.5" opacity="0.8"/>
-        <!-- left page lines -->
         <line x1="82" y1="170" x2="158" y2="165" stroke="#444" stroke-width="1" opacity="0.6"/>
         <line x1="82" y1="182" x2="158" y2="177" stroke="#444" stroke-width="1" opacity="0.6"/>
         <line x1="82" y1="194" x2="158" y2="189" stroke="#444" stroke-width="1" opacity="0.6"/>
         <line x1="82" y1="206" x2="140" y2="201" stroke="#444" stroke-width="1" opacity="0.4"/>
         <line x1="82" y1="218" x2="158" y2="213" stroke="#444" stroke-width="1" opacity="0.6"/>
         <line x1="82" y1="230" x2="158" y2="225" stroke="#444" stroke-width="1" opacity="0.6"/>
-        <line x1="82" y1="242" x2="128" y2="238" stroke="#444" stroke-width="1" opacity="0.4"/>
-        <!-- right page lines -->
         <line x1="182" y1="165" x2="258" y2="170" stroke="#444" stroke-width="1" opacity="0.6"/>
         <line x1="182" y1="177" x2="258" y2="182" stroke="#444" stroke-width="1" opacity="0.6"/>
         <line x1="182" y1="189" x2="258" y2="194" stroke="#444" stroke-width="1" opacity="0.6"/>
         <line x1="182" y1="201" x2="230" y2="205" stroke="#444" stroke-width="1" opacity="0.4"/>
         <line x1="182" y1="213" x2="258" y2="218" stroke="#444" stroke-width="1" opacity="0.6"/>
         <line x1="182" y1="225" x2="258" y2="230" stroke="#444" stroke-width="1" opacity="0.6"/>
-        <!-- bookmark ribbon -->
         <path d="M238 130 L238 172 L228 164 L218 172 L218 130 Z" fill="#e85d26" opacity="0.9"/>
-        <!-- floating small books stack -->
         <rect x="30" y="180" width="28" height="40" rx="2" fill="#e85d26" opacity="0.15"/>
         <rect x="26" y="175" width="28" height="40" rx="2" fill="#e85d26" opacity="0.2"/>
         <rect x="22" y="170" width="28" height="40" rx="2" fill="#e85d26" opacity="0.3"/>
-        <!-- decorative dots grid — like streak dots -->
         <g opacity="0.2">
           <rect x="280" y="150" width="7" height="7" rx="1" fill="#fafafa"/>
           <rect x="292" y="150" width="7" height="7" rx="1" fill="#fafafa"/>
@@ -113,187 +77,116 @@ html,body{height:100%;background:#fafafa;font-family:'Syne',sans-serif;-webkit-f
           <rect x="292" y="176" width="7" height="7" rx="1" fill="#fafafa"/>
           <rect x="304" y="176" width="7" height="7" rx="1" fill="#fafafa" opacity="0.4"/>
         </g>
-        <!-- large circle ring — like the timer ring -->
         <circle cx="170" cy="170" r="145" stroke="#ffffff" stroke-width="0.5" opacity="0.05"/>
         <circle cx="170" cy="170" r="160" stroke="#e85d26" stroke-width="0.5" opacity="0.08"/>
-        <!-- floating pen/pencil -->
         <g transform="translate(290,80) rotate(-35)">
           <rect x="-4" y="-32" width="8" height="52" rx="2" fill="#fafafa" opacity="0.15"/>
           <polygon points="-4,20 4,20 0,32" fill="#e85d26" opacity="0.6"/>
           <rect x="-4" y="-32" width="8" height="8" rx="1" fill="#555"/>
         </g>
-        <!-- small leaf/accent shapes -->
-        <ellipse cx="50" cy="130" rx="12" ry="20" transform="rotate(-20 50 130)" fill="#e85d26" opacity="0.08"/>
-        <ellipse cx="42" cy="118" rx="8" ry="14" transform="rotate(-20 42 118)" fill="#e85d26" opacity="0.12"/>
-        <!-- accent line bottom -->
         <line x1="60" y1="320" x2="140" y2="320" stroke="#e85d26" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
         <line x1="148" y1="320" x2="160" y2="320" stroke="#e85d26" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
-        <!-- star/sparkle -->
         <g transform="translate(308,240)" opacity="0.25">
           <line x1="0" y1="-8" x2="0" y2="8" stroke="#fafafa" stroke-width="1"/>
           <line x1="-8" y1="0" x2="8" y2="0" stroke="#fafafa" stroke-width="1"/>
-          <line x1="-5.5" y1="-5.5" x2="5.5" y2="5.5" stroke="#fafafa" stroke-width="0.7"/>
-          <line x1="5.5" y1="-5.5" x2="-5.5" y2="5.5" stroke="#fafafa" stroke-width="0.7"/>
-        </g>
-        <g transform="translate(38,300)" opacity="0.2">
-          <line x1="0" y1="-6" x2="0" y2="6" stroke="#fafafa" stroke-width="1"/>
-          <line x1="-6" y1="0" x2="6" y2="0" stroke="#fafafa" stroke-width="1"/>
         </g>
       </svg>
     </div>
-
     <div class="panel-quote">
       <p>"A reader lives a thousand lives before he dies. The man who never reads lives only one."</p>
       <cite>— George R.R. Martin</cite>
     </div>
   </div>
 
-  <!-- RIGHT FORM PANEL — SIGN UP -->
+  <!-- SIGN UP PANEL -->
   <div class="right-panel" id="signup-panel">
     <div class="form-box">
       <div class="form-eyebrow">Begin your journey</div>
       <div class="form-title">Create your <em>account.</em></div>
       <div class="form-sub">Already have one? <a onclick="showLogin()">Sign in</a></div>
-
       <div class="name-row">
-        <div class="field">
-          <label>First name</label>
-          <input type="text" id="su-fname" placeholder="Pranav"/>
-        </div>
-        <div class="field">
-          <label>Last name</label>
-          <input type="text" id="su-lname" placeholder=""/>
-        </div>
+        <div class="field"><label>First name</label><input type="text" id="su-fname" placeholder="Pranav"/></div>
+        <div class="field"><label>Last name</label><input type="text" id="su-lname" placeholder=""/></div>
       </div>
-      <div class="field">
-        <label>Email</label>
-        <input type="email" id="su-email" placeholder="you@example.com"/>
-      </div>
-      <div class="field">
-        <label>Password</label>
-        <input type="password" id="su-pass" placeholder="Min. 6 characters"/>
-      </div>
-      <div class="field">
-        <label>Confirm password</label>
-        <input type="password" id="su-pass2" placeholder="Repeat password"/>
-      </div>
-      <button class="submit-btn" onclick="doSignup()">Create Account</button>
+      <div class="field"><label>Email</label><input type="email" id="su-email" placeholder="you@example.com"/></div>
+      <div class="field"><label>Password</label><input type="password" id="su-pass" placeholder="Min. 6 characters"/></div>
+      <div class="field"><label>Confirm password</label><input type="password" id="su-pass2" placeholder="Repeat password"/></div>
+      <button class="submit-btn" id="su-btn" onclick="doSignup()">Create Account</button>
       <div class="error-msg" id="su-error"></div>
       <div class="success-msg" id="su-success"></div>
     </div>
-
-    <!-- corner svg accent -->
-    <svg class="corner-accent" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="120" cy="120" r="100" fill="#0a0a0a"/>
-    </svg>
+    <svg class="corner-accent" viewBox="0 0 120 120"><circle cx="120" cy="120" r="100" fill="#0a0a0a"/></svg>
   </div>
 
-  <!-- RIGHT FORM PANEL — LOGIN (hidden initially) -->
+  <!-- LOGIN PANEL -->
   <div class="right-panel" id="login-panel" style="display:none;">
     <div class="form-box">
       <div class="form-eyebrow">Welcome back</div>
       <div class="form-title">Sign <em>in.</em></div>
       <div class="form-sub">New here? <a onclick="showSignup()">Create an account</a></div>
-
-      <div class="field">
-        <label>Email</label>
-        <input type="email" id="li-email" placeholder="you@example.com"/>
-      </div>
-      <div class="field">
-        <label>Password</label>
-        <input type="password" id="li-pass" placeholder="Your password"/>
-      </div>
-      <button class="submit-btn" onclick="doLogin()">Sign In</button>
+      <div class="field"><label>Email</label><input type="email" id="li-email" placeholder="you@example.com"/></div>
+      <div class="field"><label>Password</label><input type="password" id="li-pass" placeholder="Your password"/></div>
+      <button class="submit-btn" id="li-btn" onclick="doLogin()">Sign In</button>
       <div class="error-msg" id="li-error"></div>
     </div>
-
-    <svg class="corner-accent" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="120" cy="120" r="100" fill="#0a0a0a"/>
-    </svg>
+    <svg class="corner-accent" viewBox="0 0 120 120"><circle cx="120" cy="120" r="100" fill="#0a0a0a"/></svg>
   </div>
-
 </div>
 
 <script>
-var USERS_KEY = 'readflow_users';
-var SESSION_KEY = 'readflow_session';
+const SUPABASE_URL = 'https://sxozpfmrwkahwyfchqcf.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4b3pwZm1yd2thaHd5ZmNocWNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NDI3MjYsImV4cCI6MjA5NjIxODcyNn0.hAnCe1kGS-CdmhaTybab8utIJU5v4XxAZEC0qQpVTfc';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-function loadUsers(){try{return JSON.parse(localStorage.getItem(USERS_KEY))||[];}catch(e){return[];}}
-function saveUsers(u){try{localStorage.setItem(USERS_KEY,JSON.stringify(u));}catch(e){}}
+// Check if already logged in
+(async()=>{
+  const {data:{session}}=await sb.auth.getSession();
+  if(session) window.location.href='readflow-home.html';
+})();
 
-function showLogin(){
-  document.getElementById('signup-panel').style.display='none';
-  document.getElementById('login-panel').style.display='flex';
-}
-function showSignup(){
-  document.getElementById('login-panel').style.display='none';
-  document.getElementById('signup-panel').style.display='flex';
-}
+function showLogin(){document.getElementById('signup-panel').style.display='none';document.getElementById('login-panel').style.display='flex';}
+function showSignup(){document.getElementById('login-panel').style.display='none';document.getElementById('signup-panel').style.display='flex';}
+function showErr(id,msg){var el=document.getElementById(id);el.textContent=msg;el.style.display='block';}
+function hideErr(id){document.getElementById(id).style.display='none';}
 
-function setError(id,msg){
-  var el=document.getElementById(id);
-  el.textContent=msg;el.style.display='block';
-}
-function clearMsg(id){document.getElementById(id).style.display='none';}
-
-function doSignup(){
-  clearMsg('su-error');clearMsg('su-success');
+async function doSignup(){
+  hideErr('su-error');hideErr('su-success');
   var fname=document.getElementById('su-fname').value.trim();
-  var lname=document.getElementById('su-lname').value.trim();
-  var email=document.getElementById('su-email').value.trim().toLowerCase();
+  var email=document.getElementById('su-email').value.trim();
   var pass=document.getElementById('su-pass').value;
   var pass2=document.getElementById('su-pass2').value;
-
-  if(!fname){setError('su-error','Please enter your first name.');return;}
-  if(!email||!email.includes('@')){setError('su-error','Please enter a valid email.');return;}
-  if(pass.length<6){setError('su-error','Password must be at least 6 characters.');return;}
-  if(pass!==pass2){setError('su-error','Passwords do not match.');return;}
-
-  var users=loadUsers();
-  if(users.find(function(u){return u.email===email;})){
-    setError('su-error','An account with this email already exists.');return;
-  }
-
-  var user={id:Date.now(),fname:fname,lname:lname,email:email,pass:pass};
-  users.push(user);
-  saveUsers(users);
-
-  // save session
-  try{localStorage.setItem(SESSION_KEY,JSON.stringify({id:user.id,fname:fname,email:email}));}catch(e){}
-
+  if(!fname){showErr('su-error','Please enter your first name.');return;}
+  if(!email||!email.includes('@')){showErr('su-error','Please enter a valid email.');return;}
+  if(pass.length<6){showErr('su-error','Password must be at least 6 characters.');return;}
+  if(pass!==pass2){showErr('su-error','Passwords do not match.');return;}
+  var btn=document.getElementById('su-btn');
+  btn.disabled=true;btn.textContent='Creating…';
+  const {data,error}=await sb.auth.signUp({
+    email,password:pass,
+    options:{data:{fname:fname}}
+  });
+  if(error){showErr('su-error',error.message);btn.disabled=false;btn.textContent='Create Account';return;}
   var s=document.getElementById('su-success');
   s.textContent='Account created! Redirecting…';s.style.display='block';
-  setTimeout(function(){window.location.href='readflow-home.html';},900);
+  setTimeout(()=>window.location.href='readflow-home.html',1000);
 }
 
-function doLogin(){
-  clearMsg('li-error');
-  var email=document.getElementById('li-email').value.trim().toLowerCase();
+async function doLogin(){
+  hideErr('li-error');
+  var email=document.getElementById('li-email').value.trim();
   var pass=document.getElementById('li-pass').value;
-
-  if(!email){setError('li-error','Please enter your email.');return;}
-  if(!pass){setError('li-error','Please enter your password.');return;}
-
-  var users=loadUsers();
-  var user=users.find(function(u){return u.email===email&&u.pass===pass;});
-  if(!user){setError('li-error','Incorrect email or password.');return;}
-
-  try{localStorage.setItem(SESSION_KEY,JSON.stringify({id:user.id,fname:user.fname,email:user.email}));}catch(e){}
+  if(!email){showErr('li-error','Please enter your email.');return;}
+  if(!pass){showErr('li-error','Please enter your password.');return;}
+  var btn=document.getElementById('li-btn');
+  btn.disabled=true;btn.textContent='Signing in…';
+  const {data,error}=await sb.auth.signInWithPassword({email,password:pass});
+  if(error){showErr('li-error','Incorrect email or password.');btn.disabled=false;btn.textContent='Sign In';return;}
   window.location.href='readflow-home.html';
 }
 
-// check if already logged in
-try{
-  var sess=JSON.parse(localStorage.getItem(SESSION_KEY));
-  if(sess&&sess.id)window.location.href='readflow-home.html';
-}catch(e){}
-
-// enter key support
 document.addEventListener('keydown',function(e){
   if(e.key!=='Enter')return;
-  var sp=document.getElementById('signup-panel');
-  var lp=document.getElementById('login-panel');
-  if(sp.style.display!=='none')doSignup();
+  if(document.getElementById('signup-panel').style.display!=='none')doSignup();
   else doLogin();
 });
 </script>
