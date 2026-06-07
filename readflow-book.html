@@ -126,6 +126,12 @@ body{background:#fafafa;color:#0a0a0a;font-family:'Syne',sans-serif;-webkit-font
 .session-summary-val{font-family:'DM Mono',monospace;font-size:18px;font-weight:400;color:#0a0a0a;}
 .optional-label{font-family:'DM Mono',monospace;font-size:9px;color:#ccc;letter-spacing:0.08em;text-transform:uppercase;margin-left:6px;}
 </style>
+  <link rel="manifest" href="/manifest.json"/>
+  <meta name="theme-color" content="#0a0a0a"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+  <meta name="apple-mobile-web-app-title" content="ReadFlow"/>
+  <script>if("serviceWorker"in navigator){navigator.serviceWorker.register("/sw.js");}</script>
 </head>
 <body>
 <div class="topnav">

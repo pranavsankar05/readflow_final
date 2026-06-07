@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="80" fill="#0a0a0a"/>
+  <!-- open book -->
+  <path d="M120 320 Q256 295 256 295 Q256 295 392 320 L392 370 Q256 345 256 345 Q256 345 120 370 Z" fill="#1a1a1a"/>
+  <path d="M120 165 Q188 150 256 158 L256 322 Q188 314 120 328 Z" fill="#2a2a2a"/>
+  <path d="M256 158 Q324 150 392 165 L392 328 Q324 314 256 322 Z" fill="#222"/>
+  <line x1="256" y1="152" x2="256" y2="326" stroke="#e85d26" stroke-width="4"/>
+  <!-- left page lines -->
+  <line x1="148" y1="200" x2="238" y2="194" stroke="#444" stroke-width="3" stroke-linecap="round"/>
+  <line x1="148" y1="220" x2="238" y2="214" stroke="#444" stroke-width="3" stroke-linecap="round"/>
+  <line x1="148" y1="240" x2="210" y2="235" stroke="#444" stroke-width="3" stroke-linecap="round"/>
+  <line x1="148" y1="260" x2="238" y2="254" stroke="#444" stroke-width="3" stroke-linecap="round"/>
+  <line x1="148" y1="280" x2="238" y2="274" stroke="#444" stroke-width="3" stroke-linecap="round"/>
+  <!-- right page lines -->
+  <line x1="274" y1="194" x2="364" y2="200" stroke="#444" stroke-width="3" stroke-linecap="round"/>
+  <line x1="274" y1="214" x2="364" y2="220" stroke="#444" stroke-width="3" stroke-linecap="round"/>
+  <line x1="274" y1="235" x2="330" y2="240" stroke="#444" stroke-width="3" stroke-linecap="round"/>
+  <line x1="274" y1="254" x2="364" y2="260" stroke="#444" stroke-width="3" stroke-linecap="round"/>
+  <line x1="274" y1="274" x2="364" y2="280" stroke="#444" stroke-width="3" stroke-linecap="round"/>
+  <!-- bookmark -->
+  <path d="M340 148 L340 196 L326 186 L312 196 L312 148 Z" fill="#e85d26"/>
+</svg>
