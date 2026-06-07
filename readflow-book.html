@@ -119,6 +119,12 @@ body{background:#fafafa;color:#0a0a0a;font-family:'Syne',sans-serif;-webkit-font
 .mcancelbtn{flex:1;padding:12px;background:none;border:1px solid #e8e8e5;border-radius:2px;font-family:'Syne',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#aaa;cursor:pointer;}
 .mconfirmbtn{flex:2;padding:12px;background:#0a0a0a;color:#fafafa;border:none;border-radius:2px;font-family:'Syne',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;transition:opacity 0.15s;}
 .mconfirmbtn:hover{opacity:0.78;}
+.finish-btn{padding:14px 32px;background:none;border:1px solid #e8e8e5;border-radius:2px;font-family:'Syne',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#888;cursor:pointer;transition:all 0.15s;}
+.finish-btn:hover{border-color:#e85d26;color:#e85d26;}
+.session-summary{background:#f8f8f6;border-radius:3px;padding:14px 16px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;}
+.session-summary-label{font-family:'DM Mono',monospace;font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:0.08em;}
+.session-summary-val{font-family:'DM Mono',monospace;font-size:18px;font-weight:400;color:#0a0a0a;}
+.optional-label{font-family:'DM Mono',monospace;font-size:9px;color:#ccc;letter-spacing:0.08em;text-transform:uppercase;margin-left:6px;}
 </style>
 </head>
 <body>
@@ -171,7 +177,10 @@ body{background:#fafafa;color:#0a0a0a;font-family:'Syne',sans-serif;-webkit-font
             <div class="ring-status" id="timer-status">paused</div>
           </div>
         </div>
-        <button class="start-btn" id="start-btn" onclick="toggleTimer()">Start</button>
+        <div style="display:flex;gap:10px;width:100%;justify-content:center;">
+          <button class="start-btn" id="start-btn" onclick="toggleTimer()">Start</button>
+          <button class="finish-btn" id="finish-btn" onclick="openFinishModal()" style="display:none;">Finish</button>
+        </div>
         <div class="goal-inline">
           <span class="goal-prefix">Goal</span>
           <input class="ginp" id="goal-h" type="number" value="1" min="0" max="23" oninput="onGoalChange()"/>
@@ -212,6 +221,44 @@ body{background:#fafafa;color:#0a0a0a;font-family:'Syne',sans-serif;-webkit-font
         <button class="btn-addlog" onclick="openLogModal()">+ Add</button>
       </div>
       <div id="logs-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- FINISH SESSION MODAL -->
+<div class="overlay" id="finish-overlay" onclick="if(event.target===this)closeFinishModal()">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Finish <em>session</em></div>
+      <button class="xbtn" onclick="closeFinishModal()">&#215;</button>
+    </div>
+    <!-- session time summary -->
+    <div class="session-summary">
+      <div>
+        <div class="session-summary-label">Time read</div>
+        <div class="session-summary-val" id="finish-time-disp">00:00</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="session-summary-label">Goal</div>
+        <div class="session-summary-val" id="finish-goal-disp">1h</div>
+      </div>
+    </div>
+    <!-- pages update -->
+    <div class="field">
+      <label>Pages read today <span class="optional-label">updates your progress</span></label>
+      <input type="number" id="finish-pages" min="0" placeholder="e.g. 42"/>
+    </div>
+    <!-- quick log -->
+    <div class="field">
+      <label>Session note <span class="optional-label">optional</span></label>
+      <input type="text" id="finish-subj" placeholder="e.g. Chapter 3 recap, key idea…"/>
+    </div>
+    <div class="field">
+      <textarea id="finish-log" placeholder="Write what you read, understood, or want to remember…" style="min-height:80px;"></textarea>
+    </div>
+    <div class="modal-acts">
+      <button class="mcancelbtn" onclick="closeFinishModal()">Cancel</button>
+      <button class="mconfirmbtn" id="finish-save-btn" onclick="finishSession()">Save &amp; Finish</button>
     </div>
   </div>
 </div>
@@ -344,6 +391,8 @@ function toggleTimer(){
   } else {
     timerRun=true;
     document.getElementById('start-btn').textContent='Pause';
+    // show finish button as soon as timer starts
+    document.getElementById('finish-btn').style.display='block';
     timerInt=setInterval(async()=>{
       timerSec++;updateTimerUI();
       const gs=getGoalSecs();
@@ -415,7 +464,68 @@ async function saveLog(){
   if(error){alert('Error: '+error.message);return;}
   logs.unshift(data);closeLogModal();renderLogs();
 }
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLogModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeLogModal();closeFinishModal();}});
+
+function openFinishModal(){
+  // stop timer if running
+  if(timerRun){
+    clearInterval(timerInt);timerRun=false;
+    document.getElementById('start-btn').textContent='Resume';
+  }
+  // show session summary
+  document.getElementById('finish-time-disp').textContent=fmtTimer(timerSec);
+  document.getElementById('finish-goal-disp').textContent=fmtSecs(getGoalSecs());
+  // pre-fill pages with current value
+  document.getElementById('finish-pages').value=book.read||'';
+  document.getElementById('finish-subj').value='';
+  document.getElementById('finish-log').value='';
+  document.getElementById('finish-overlay').classList.add('open');
+  document.getElementById('finish-pages').focus();
+}
+function closeFinishModal(){
+  document.getElementById('finish-overlay').classList.remove('open');
+}
+async function finishSession(){
+  const btn=document.getElementById('finish-save-btn');
+  btn.disabled=true;btn.textContent='Saving…';
+
+  // 1. persist the session
+  await persistSession();
+
+  // 2. update pages if entered
+  const pagesVal=parseInt(document.getElementById('finish-pages').value);
+  if(!isNaN(pagesVal)&&pagesVal>=0){
+    const clamped=Math.min(pagesVal,book.pages);
+    book.read=clamped;
+    updateProgBar();
+    document.getElementById('pages-read').value=clamped;
+    await sb.from('books').update({read:clamped}).eq('id',bookId);
+  }
+
+  // 3. save log if subject entered
+  const subj=document.getElementById('finish-subj').value.trim();
+  const logTxt=document.getElementById('finish-log').value.trim();
+  if(subj){
+    const {data:newLog}=await sb.from('logs')
+      .insert([{user_id:userId,book_id:bookId,subject:subj,text:logTxt||'—'}])
+      .select().single();
+    if(newLog){logs.unshift(newLog);renderLogs();}
+  }
+
+  // 4. reset timer
+  timerSec=0;timerRun=false;goalMet=false;
+  clearInterval(timerInt);
+  document.getElementById('start-btn').textContent='Start';
+  document.getElementById('finish-btn').style.display='none';
+  localStorage.removeItem('rf_timer_'+bookId);
+  updateTimerUI();
+
+  // 5. refresh streak
+  await renderStreak();
+
+  btn.disabled=false;btn.textContent='Save & Finish';
+  closeFinishModal();
+}
 
 function startBlob(){
   let t=0;
